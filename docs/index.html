@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NC Report Designer demo</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+         background: linear-gradient(135deg, #1f2a44, #3b2d5c); color: #fff; font-family: system-ui, "Segoe UI", sans-serif; }
+  h1 { font-size: clamp(24px, 4vw, 40px); margin: 24px 16px 8px; text-align: center; }
+  p { margin: 0 16px 20px; opacity: .85; text-align: center; }
+  video { width: min(1200px, calc(100vw - 32px)); aspect-ratio: 16 / 9; border-radius: 10px; background: #000;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, .45); }
+  a { color: #ffc861; }
+  footer { margin: 18px 16px 28px; font-size: 15px; }
+</style>
+</head>
+<body>
+  <h1>NC Report Designer for Odoo 19</h1>
+  <p>A WYSIWYG designer for Odoo's printed reports: 3:10 demo with captions</p>
+  <video src="demo.mp4" poster="video-thumbnail.jpg" controls playsinline preload="metadata"></video>
+  <footer><a href="https://github.com/NC-Automation/odoo-report-designer">Source code, features and installation on GitHub</a></footer>
+</body>
+</html>
