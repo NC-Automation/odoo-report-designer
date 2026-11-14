@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="nc_report_designer.ExpressionEditor">
+        <Dialog title="props.title" size="'lg'">
+            <div class="o_ncd_expr d-flex gap-3">
+                <div class="o_ncd_expr_vars border-end pe-2">
+                    <input type="search" class="form-control form-control-sm mb-2" placeholder="Search variables and fields…"
+                           t-model="state.search"/>
+                    <div class="o_ncd_expr_legend small mb-2">
+                        <span class="o_ncd_c_var">variable</span> ·
+                        <span class="o_ncd_c_table">table</span> ·
+                        <span class="o_ncd_c_field">field</span>
+                    </div>
+
+                    <div class="o_ncd_expr_group">Records</div>
+                    <div t-foreach="records" t-as="variable" t-key="variable.var" class="mb-1">
+                        <div class="o_ncd_var d-flex align-items-center" t-att-title="definitionTitle(variable)">
+                            <i class="fa fa-fw" t-att-class="state.openVars[variable.var] ? 'fa-caret-down' : 'fa-caret-right'"
+                               t-on-click="() => this.toggleVar(variable.var)"/>
+                            <a href="#" class="me-1" title="Insert the variable" t-on-click.prevent="() => this.insertVariable(variable)">
+                                <code class="o_ncd_c_var" t-esc="variable.var"/>
+                            </a>
+                            <span class="small text-truncate o_ncd_c_table" t-esc="variable.model_name"
+                                  t-on-click="() => this.toggleVar(variable.var)"/>
+                        </div>
+                        <div t-if="definition(variable)" class="o_ncd_expr_def" t-att-title="definitionTitle(variable)"
+                             t-esc="definition(variable)"/>
+                        <FieldList t-if="state.openVars[variable.var]" model="variable.model" var="variable.var"
+                                   depth="0" search="state.search" loadFields="props.loadFields"
+                                   onDragStart="(ev, payload) => this.onFieldDragStart(ev, payload)" onDragEnd="() => {}"
+                                   onInsert="(payload) => this.insertField(payload)"/>
+                    </div>
+
+                    <t t-if="values.length">
+                        <div class="o_ncd_expr_group mt-2">Template variables</div>
+                        <div t-foreach="values" t-as="variable" t-key="variable.var" class="o_ncd_expr_value mb-1"
+                             t-att-title="definitionTitle(variable)" t-on-click="() => this.insertVariable(variable)">
+                            <div class="d-flex align-items-center">
+                                <code class="o_ncd_c_var" t-esc="variable.var"/>
+                                <span t-if="variable.condition" class="badge text-bg-light border ms-1">if…</span>
+                                <span t-if="variable.where" class="text-muted small text-truncate ms-auto" t-esc="variable.where"/>
+                            </div>
+                            <div class="o_ncd_expr_def" t-esc="definition(variable)"/>
+                        </div>
+                    </t>
+
+                    <t t-if="helpers.length">
+                        <div class="o_ncd_expr_group mt-2 o_ncd_var" t-on-click="() => state.showHelpers = !state.showHelpers">
+                            <i class="fa fa-fw" t-att-class="state.showHelpers ? 'fa-caret-down' : 'fa-caret-right'"/>Loop counters and tools
+                        </div>
+                        <t t-if="state.showHelpers or state.search.trim()">
+                            <div t-foreach="helpers" t-as="variable" t-key="variable.var" class="o_ncd_expr_value mb-1"
+                                 t-att-title="definitionTitle(variable)" t-on-click="() => this.insertVariable(variable)">
+                                <code class="o_ncd_c_var" t-esc="variable.var"/>
+                                <div class="o_ncd_expr_def fst-italic" t-esc="definition(variable)"/>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+                <div class="flex-grow-1 d-flex flex-column">
+                    <div class="o_ncd_expr_editor position-relative">
+                        <pre class="o_ncd_expr_highlight form-control font-monospace mb-0" t-ref="highlight" aria-hidden="true"><t
+                            t-foreach="tokens" t-as="token" t-key="token_index"><span t-att-class="token.cls" t-esc="token.text"/></t></pre>
+                        <textarea class="form-control font-monospace o_ncd_expr_text" rows="5" t-ref="text"
+                                  spellcheck="false" t-att-value="state.value" t-on-input="onInput"
+                                  t-on-scroll="() => this.syncScroll()" t-on-keydown="onKeydown"
+                                  t-on-click="() => this.closeCompletion()" t-on-blur="() => this.closeCompletion()"/>
+                        <div t-if="state.completion" class="o_ncd_completion dropdown-menu show" t-ref="completion"
+                             t-attf-style="top: {{state.completion.top}}px; left: {{state.completion.left}}px;">
+                            <a t-foreach="state.completion.items" t-as="item" t-key="item_index" href="#"
+                               class="dropdown-item d-flex align-items-baseline gap-2"
+                               t-att-class="{ active: item_index === state.completion.active }"
+                               t-on-mousedown.prevent="() => this.acceptCompletion(item)"
+                               t-on-mouseenter="() => this.setActiveCompletion(item_index)">
+                                <code t-att-class="item.cls" t-esc="item.label"/>
+                                <small class="ms-auto text-truncate" t-att-class="item.detailCls || 'text-muted'" t-esc="item.detail"/>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                        <button t-foreach="snippets" t-as="snippet" t-key="snippet[0]" class="btn btn-sm btn-light font-monospace"
+                                t-att-title="snippet[2]" t-on-click="() => this.insert(snippet[1])" t-esc="snippet[0]"/>
+                    </div>
+                    <div t-if="joinSnippets.length" class="d-flex flex-wrap align-items-center gap-1 mt-1">
+                        <span class="small text-muted me-1">Join:</span>
+                        <button t-foreach="joinSnippets" t-as="snippet" t-key="snippet[0]" class="btn btn-sm btn-light border font-monospace"
+                                t-att-title="snippet[2]" t-on-click="() => this.insertSnippet(snippet)" t-esc="snippet[0]"/>
+                    </div>
+                    <div t-if="textSnippets.length" class="d-flex flex-wrap align-items-center gap-1 mt-1">
+                        <span class="small text-muted me-1">Text:</span>
+                        <button t-foreach="textSnippets" t-as="snippet" t-key="snippet[0]" class="btn btn-sm btn-light border"
+                                t-att-title="snippet[2]" t-on-click="() => this.insertSnippet(snippet)" t-esc="snippet[0]"/>
+                    </div>
+                    <div t-if="state.error" class="alert alert-danger small py-1 px-2 mt-2 mb-0" t-esc="state.error"/>
+                    <div class="form-text mt-2">
+                        <t t-if="props.help"><t t-esc="props.help"/><br/></t>
+                        Click a field on the left to insert it at the cursor, or drag it into the box.
+                        <t t-if="isFormat">The text is printed as is; what is between <code>{{ }}</code> is computed.</t>
+                        <t t-else="">Written in Python, e.g. <code>o.amount_total &gt; 1000 and o.partner_id.country_id.code == 'US'</code>.</t>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="state.saving" t-on-click="() => this.save()">Apply</button>
+                <button class="btn btn-secondary" t-on-click="() => props.close()">Cancel</button>
+                <span class="text-muted small ms-2">Ctrl+Enter applies · Ctrl+Space suggests</span>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

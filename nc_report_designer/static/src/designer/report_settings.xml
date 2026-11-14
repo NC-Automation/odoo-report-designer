@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="nc_report_designer.ReportEditDialog">
+        <Dialog title="'Edit the report'" size="'md'">
+            <t t-if="state.loaded">
+                <label class="form-label" for="ncd_edit_name">Report name</label>
+                <input id="ncd_edit_name" type="text" class="form-control" t-model="state.name" t-on-keydown="onKeydown"/>
+                <div class="form-text">Also the name shown in the Print menu.</div>
+
+                <div class="form-check form-switch mt-3">
+                    <input class="form-check-input" type="checkbox" id="ncd_edit_print_menu" t-model="state.printMenu"/>
+                    <label class="form-check-label" for="ncd_edit_print_menu">Show it in the Print menu</label>
+                </div>
+                <div t-if="state.printMenu and state.multiCompany" class="mt-2 ms-4">
+                    <label class="form-label small mb-1">For these companies only</label>
+                    <MultiRecordSelector resModel="'res.company'" resIds="state.printCompanyIds" placeholder="'All companies'"
+                                         update="(ids) => { state.printCompanyIds = ids; }"/>
+                    <div class="form-text">
+                        Shown in the Print menu while one of these companies is the current one (company switcher).
+                        Empty: for every company.
+                    </div>
+                </div>
+                <div t-if="state.error" class="alert alert-danger small py-1 px-2 mt-3 mb-0" t-esc="state.error"/>
+            </t>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="state.saving or !state.loaded" t-on-click="() => this.save()">Save</button>
+                <button class="btn btn-secondary" t-on-click="() => props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="nc_report_designer.ReportEmailsDialog">
+        <Dialog title="'Use for emails'" size="'lg'">
+            <t t-if="state.loaded">
+                <div t-if="state.templates === null" class="text-muted">Emails are not installed.</div>
+                <div t-elif="!state.templates.length" class="text-muted">There is no email template for these records.</div>
+                <t t-else="">
+                    <p class="small text-muted mb-2">
+                        The PDF attached to the emails sent with each template. “Use this report” attaches
+                        “<t t-esc="props.reportName"/>” instead of the other reports of these records.
+                    </p>
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Email template</th><th>Attaches now</th><th/></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.templates" t-as="template" t-key="template.id">
+                                <td t-esc="template.name"/>
+                                <td class="small">
+                                    <span t-if="template.uses_this" class="badge text-bg-success me-1">this report</span>
+                                    <t t-foreach="otherReports(template)" t-as="report" t-key="report.id">
+                                        <span class="badge text-bg-light border me-1" t-esc="report.name"/>
+                                    </t>
+                                    <span t-if="!template.reports.length" class="text-muted">no report</span>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <button t-if="!template.uses_this" class="btn btn-sm btn-primary" t-att-disabled="state.busy"
+                                            t-on-click="() => this.setUse(template, true)">Use this report</button>
+                                    <button t-else="" class="btn btn-sm btn-light border" t-att-disabled="state.busy"
+                                            title="Stop attaching this report to these emails"
+                                            t-on-click="() => this.setUse(template, false)">Stop using</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <div t-if="state.error" class="alert alert-danger small py-1 px-2 mt-3 mb-0" t-esc="state.error"/>
+            </t>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="() => props.close()">Done</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

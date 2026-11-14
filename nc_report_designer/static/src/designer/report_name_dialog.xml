@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="nc_report_designer.ReportNameDialog">
+        <Dialog title="props.title" size="'md'">
+            <label class="form-label" for="ncd_report_name">Report name</label>
+            <input id="ncd_report_name" type="text" class="form-control" t-ref="name"
+                   t-model="state.name" t-on-keydown="onKeydown"/>
+            <div class="form-text">This is also the name shown in the Print menu.</div>
+            <div t-if="props.printMenu" class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" id="ncd_print_menu" t-model="state.printMenu"/>
+                <label class="form-check-label" for="ncd_print_menu">Show it in the Print menu</label>
+            </div>
+            <div t-if="props.help" class="form-text mt-3" t-esc="props.help"/>
+            <div t-if="state.error" class="alert alert-danger small py-1 px-2 mt-3 mb-0" t-esc="state.error"/>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="state.saving" t-on-click="() => this.confirm()" t-esc="props.confirmLabel"/>
+                <button class="btn btn-secondary" t-on-click="() => props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
