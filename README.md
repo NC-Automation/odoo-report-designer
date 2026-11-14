@@ -1,4 +1,6 @@
-# NC Report Designer for Odoo 19
+# NC Report Designer for Odoo 20
+
+> This is the **20.0** branch, for Odoo 20. For Odoo 19, use the [main branch](https://github.com/NC-Automation/odoo-report-designer/tree/main).
 
 A WYSIWYG designer for Odoo's printed (QWeb) reports: quotes, invoices, delivery slips and any other PDF report. You edit on a live preview of a real record, and every change is saved as a regular inherited view, so the original templates are never modified and Odoo upgrades keep working.
 
@@ -64,7 +66,7 @@ Each template you change gets one inherited QWeb view (`nc_report_designer.custo
 
 ## Installation
 
-1. Copy the `nc_report_designer` folder into your Odoo 19 addons path (or add this repository to it).
+1. Copy the `nc_report_designer` folder into your Odoo 20 addons path (or add this repository to it).
 2. Update the apps list and install **Report Designer**.
 
 It depends only on `web` and `base_setup`, and works on Community and Enterprise, including Odoo.sh.

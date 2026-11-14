@@ -1,4 +1,4 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, proxy, t, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
@@ -14,15 +14,15 @@ function errorText(error) {
 export class ReportEditDialog extends Component {
     static template = "nc_report_designer.ReportEditDialog";
     static components = { Dialog, MultiRecordSelector };
-    static props = {
-        reportId: Number,
-        onSaved: Function, // (name) => void
-        close: Function,
-    };
+    props = useProps({
+        reportId: t.number(),
+        onSaved: t.function(), // (name) => void
+        close: t.function(),
+    });
 
     setup() {
         this.orm = useService("orm");
-        this.state = useState({ loaded: false, name: "", printMenu: true, printCompanyIds: [], multiCompany: false, error: "", saving: false });
+        this.state = proxy({ loaded: false, name: "", printMenu: true, printCompanyIds: [], multiCompany: false, error: "", saving: false });
         onWillStart(async () => {
             const settings = await this.orm.call(MODEL, "get_report_settings", [this.props.reportId]);
             Object.assign(this.state, {
@@ -72,15 +72,15 @@ export class ReportEditDialog extends Component {
 export class ReportEmailsDialog extends Component {
     static template = "nc_report_designer.ReportEmailsDialog";
     static components = { Dialog };
-    static props = {
-        reportId: Number,
-        reportName: String,
-        close: Function,
-    };
+    props = useProps({
+        reportId: t.number(),
+        reportName: t.string(),
+        close: t.function(),
+    });
 
     setup() {
         this.orm = useService("orm");
-        this.state = useState({ loaded: false, templates: null, error: "", busy: false });
+        this.state = proxy({ loaded: false, templates: null, error: "", busy: false });
         onWillStart(() => this.load());
     }
 

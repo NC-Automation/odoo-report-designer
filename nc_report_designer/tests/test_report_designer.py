@@ -22,7 +22,7 @@ ARCH = """
                 </table>
                 <div class="row" name="cols">
                     <div class="col-4"><span>A</span><span name="ref" t-if="o.ref"> ref</span></div>
-                    <div class="col-4 text-end"><span>B</span><t t-esc="o.name"/></div>
+                    <div class="col-4 text-end"><span>B</span><t t-out="o.name"/></div>
                     <div class="col-4"><span>C</span></div>
                 </div>
             </div>
@@ -370,10 +370,10 @@ class TestReportDesigner(ReportDesignerCase):
         node = self.designer.get_node(self.report.id, column)
         # the value shown by a <t> inside the element (no "field" on the element itself)
         self.assertEqual(node['expressions'], [{
-            'kind': 'expression', 'child': [1], 'attr': 't-esc', 'value': 'o.name', 'label': 'Shows',
+            'kind': 'expression', 'child': [1], 'attr': 't-out', 'value': 'o.name', 'label': 'Shows',
             'inside': True, 'format': False,
         }])
-        self.apply(type='set_expression', target=column, child=[1], attr='t-esc', value='o.email')
+        self.apply(type='set_expression', target=column, child=[1], attr='t-out', value='o.email')
         self.assertIn('designer@example.com', self.page().xpath('.//div[@name="cols"]/div[2]')[0].text_content())
         # attributes computed by expressions
         self.apply(type='set_expression', target=column, child=[], attr='t-attf-title', value='Hi {{ o.name }}')
@@ -382,7 +382,7 @@ class TestReportDesigner(ReportDesignerCase):
         self.assertIn('Attribute “title” (text with {{ }})', labels)
         # invalid Python is refused, whatever way it comes
         with self.assertRaises(UserError):
-            self.apply(type='set_expression', target=column, child=[1], attr='t-esc', value='o.name +')
+            self.apply(type='set_expression', target=column, child=[1], attr='t-out', value='o.name +')
         with self.assertRaises(UserError):
             self.apply(type='set_attrs', target=self.target('//h2'), attrs={'t-if': 'o.ref =='})
         with self.assertRaises(UserError):
@@ -418,7 +418,7 @@ class TestReportDesigner(ReportDesignerCase):
 
     def test_template_variables(self):
         self.apply(type='replace_xml', target=self.target('//div[@name="cols"]/div[3]/span'),
-                   xml='<t t-set="greeting" t-value="\'Hi \' + o.name"/><span name="g" t-esc="greeting"/>')
+                   xml='<t t-set="greeting" t-value="\'Hi \' + o.name"/><span name="g" t-out="greeting"/>')
         variables = {v['var']: v for v in self.designer.get_node(self.report.id, self.target('//td'))['variables']}
         self.assertEqual((variables['line']['kind'], variables['line']['expression'], variables['line']['model']),
                          ('loop', 'o.child_ids', 'res.partner'))
@@ -525,6 +525,20 @@ class TestReportDesigner(ReportDesignerCase):
         # resetting a template is listed too
         self.designer.reset_change(self.designer._custom_view(self.view).id)
         self.assertTrue(names()[0].startswith('Reset'), names()[0])
+
+    def test_preview_at_earlier_point(self):
+        """The Changes tab's preview of an earlier point draws it, then leaves the report as it is now."""
+        from odoo.addons.nc_report_designer.controllers.main import ReportDesignerController
+        self.apply(type='set_text', target=self.target('//h2'), html='Before')
+        self.apply(type='set_text', target=self.target('//h2'), html='Now')
+        earlier = self.designer.get_history([self.view.id])['changes'][-1]['id']
+        state = self.designer._state_at(earlier, [self.view.id])
+        html = ReportDesignerController()._render_preview(
+            self.env, self.report, self.partner.id, [], state=state, at=earlier)
+        html = html.decode() if isinstance(html, bytes) else str(html)
+        self.assertIn('Before', html)
+        self.assertNotIn('could not be drawn', html)
+        self.assertEqual(self.page().xpath('.//h2')[0].text_content(), 'Now')
 
     def test_rename_and_duplicate(self):
         self.designer.rename_report(self.report.id, '  Designer   renamed ')
@@ -650,7 +664,7 @@ class TestReportDesigner(ReportDesignerCase):
             key = f'nc_report_designer.test_{title.lower()}'
             self.env['ir.ui.view'].create({
                 'name': key, 'type': 'qweb', 'key': key,
-                'arch': f'<t t-name="{key}"><t t-foreach="docs" t-as="o"><h1>{title} <t t-esc="o.name"/></h1></t></t>',
+                'arch': f'<t t-name="{key}"><t t-foreach="docs" t-as="o"><h1>{title} <t t-out="o.name"/></h1></t></t>',
             })
             return self.env['ir.actions.report'].create({
                 'name': title, 'model': 'res.partner', 'report_type': 'qweb-pdf', 'report_name': key,

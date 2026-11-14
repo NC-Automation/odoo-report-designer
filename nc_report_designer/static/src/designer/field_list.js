@@ -1,4 +1,4 @@
-import { Component, onWillStart, onWillUpdateProps, useState } from "@odoo/owl";
+import { Component, onWillStart, onWillUpdateProps, proxy, t, useProps } from "@odoo/owl";
 
 const TYPE_LABELS = {
     char: "text",
@@ -23,22 +23,22 @@ const TYPE_LABELS = {
  */
 export class FieldList extends Component {
     static template = "nc_report_designer.FieldList";
-    static props = {
-        model: String,
-        var: String,
-        prefix: { type: String, optional: true },
+    props = useProps({
+        model: t.string(),
+        var: t.string(),
+        prefix: t.string().optional(),
         // fields of the lines of the table around the selection: dropped as new columns
-        column: { type: Boolean, optional: true },
-        depth: Number,
-        search: { type: String, optional: true },
-        loadFields: Function,
-        onDragStart: Function,
-        onDragEnd: Function,
-        onInsert: Function,
-    };
+        column: t.boolean().optional(),
+        depth: t.number(),
+        search: t.string().optional(),
+        loadFields: t.function(),
+        onDragStart: t.function(),
+        onDragEnd: t.function(),
+        onInsert: t.function(),
+    });
 
     setup() {
-        this.state = useState({ fields: [], expanded: {} });
+        this.state = proxy({ fields: [], expanded: {} });
         onWillStart(async () => {
             this.state.fields = await this.props.loadFields(this.props.model);
         });

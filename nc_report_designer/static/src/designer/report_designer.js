@@ -2,9 +2,10 @@ import {
     Component,
     onWillStart,
     onWillUnmount,
-    useExternalListener,
-    useRef,
-    useState,
+    proxy,
+    signal,
+    useListener,
+    useProps,
 } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { browser } from "@web/core/browser/browser";
@@ -252,18 +253,18 @@ function toHexColor(value) {
 export class ReportDesigner extends Component {
     static template = "nc_report_designer.ReportDesigner";
     static components = { RecordSelector, FieldList, Dropdown, DropdownItem };
-    static props = ["*"];
+    props = useProps();
 
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.dialog = useService("dialog");
-        this.canvasRef = useRef("canvas");
-        this.iframeRef = useRef("iframe");
-        this.xmlRef = useRef("xml");
-        this.changeXmlRef = useRef("changeXml");
-        this.newAttrNameRef = useRef("newAttrName");
-        this.newAttrValueRef = useRef("newAttrValue");
+        this.canvasRef = signal.ref();
+        this.iframeRef = signal.ref();
+        this.xmlRef = signal.ref();
+        this.changeXmlRef = signal.ref();
+        this.newAttrNameRef = signal.ref();
+        this.newAttrValueRef = signal.ref();
 
         this.fontSizes = FONT_SIZES;
         this.sides = SIDES;
@@ -279,7 +280,7 @@ export class ReportDesigner extends Component {
         this.selectToken = 0;
         this.savedScroll = 0;
 
-        this.state = useState({
+        this.state = proxy({
             reportId: false,
             resId: false,
             setup: null,
@@ -319,7 +320,7 @@ export class ReportDesigner extends Component {
         this.onDragEnd = this.onDragEnd.bind(this);
         this.insertFromPalette = this.insertFromPalette.bind(this);
 
-        useExternalListener(window, "keydown", (ev) => this.onKeydown(ev));
+        useListener(window, "keydown", (ev) => this.onKeydown(ev));
 
         onWillStart(async () => {
             // report_id from the "Report Designer" button of a report, resId from the URL
@@ -348,7 +349,7 @@ export class ReportDesigner extends Component {
     }
 
     get frameDoc() {
-        return this.iframeRef.el?.contentDocument || null;
+        return this.iframeRef()?.contentDocument || null;
     }
 
     get currentStyle() {
@@ -593,7 +594,7 @@ export class ReportDesigner extends Component {
     // ------------------------------------------------------------------
 
     reloadPreview() {
-        this.savedScroll = this.canvasRef.el?.scrollTop || 0;
+        this.savedScroll = this.canvasRef()?.scrollTop || 0;
         // hidden elements drawn anyway (hatched): the selected one (showSelectedHidden) and,
         // while the Hidden tab is open, all of them (showAllHidden)
         const targets = [...new Set([this.forced, ...(this.hiddenForce || [])].filter(Boolean))];
@@ -676,19 +677,19 @@ export class ReportDesigner extends Component {
         if (this.state.viewingAt !== null) {
             // an earlier state, only to look at: its elements are not those of the templates now
             this.updateFrameHeight();
-            if (this.canvasRef.el) {
-                this.canvasRef.el.scrollTop = this.savedScroll;
+            if (this.canvasRef()) {
+                this.canvasRef().scrollTop = this.savedScroll;
             }
             return;
         }
         this.viewIds = [...new Set([...doc.querySelectorAll("[data-ncd]")].map((el) => el.dataset.ncd.split(":")[0]))].map(Number);
         this.updateFrameHeight();
         this.frameObserver?.disconnect();
-        const win = this.iframeRef.el.contentWindow;
+        const win = this.iframeRef().contentWindow;
         this.frameObserver = new win.ResizeObserver(() => this.updateFrameHeight());
         this.frameObserver.observe(doc.body);
-        if (this.canvasRef.el) {
-            this.canvasRef.el.scrollTop = this.savedScroll;
+        if (this.canvasRef()) {
+            this.canvasRef().scrollTop = this.savedScroll;
         }
         if (this.state.previewError && (this.forced || this.hiddenForce?.length)) {
             // the hidden element(s) cannot be drawn for this record: draw the page as it is
@@ -724,7 +725,7 @@ export class ReportDesigner extends Component {
         // Measure at a fixed baseline height: some layouts size their body / page on the
         // viewport (100vh, min-height: 100%), so measuring at the current frame height made
         // every resize grow the content, and the frame, forever (an endless render loop).
-        const iframe = this.iframeRef.el;
+        const iframe = this.iframeRef();
         const current = iframe.style.height;
         iframe.style.height = `${this.pageHeightPx}px`;
         const content = Math.ceil(doc.body.scrollHeight);
@@ -1639,8 +1640,8 @@ export class ReportDesigner extends Component {
     }
 
     addAttribute() {
-        const name = this.newAttrNameRef.el?.value.trim();
-        const value = this.newAttrValueRef.el?.value || "";
+        const name = this.newAttrNameRef()?.value.trim();
+        const value = this.newAttrValueRef()?.value || "";
         if (name) {
             this.setAttrs({ [name]: value });
         }
@@ -1653,7 +1654,7 @@ export class ReportDesigner extends Component {
     }
 
     applyXml() {
-        const xml = this.xmlRef.el?.value;
+        const xml = this.xmlRef()?.value;
         if (xml && xml !== this.state.node.source) {
             this.runOp({ type: "replace_xml", target: this.state.selected, xml });
         }
@@ -2258,7 +2259,7 @@ export class ReportDesigner extends Component {
     }
 
     async saveChangeXml(change) {
-        const arch = this.changeXmlRef.el?.value;
+        const arch = this.changeXmlRef()?.value;
         if (!arch || arch === change.arch) {
             return;
         }

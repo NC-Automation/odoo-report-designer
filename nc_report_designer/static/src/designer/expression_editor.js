@@ -1,4 +1,4 @@
-import { Component, onMounted, useRef, useState } from "@odoo/owl";
+import { Component, onMounted, proxy, signal, t, useProps } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { FieldList } from "./field_list";
@@ -146,26 +146,26 @@ export function highlightFormat(source, variables) {
 export class ExpressionEditor extends Component {
     static template = "nc_report_designer.ExpressionEditor";
     static components = { Dialog, FieldList };
-    static props = {
-        title: String,
-        attr: String,
-        value: { type: String, optional: true },
-        help: { type: String, optional: true },
-        scope: Array,
+    props = useProps({
+        title: t.string(),
+        attr: t.string(),
+        value: t.string().optional(),
+        help: t.string().optional(),
+        scope: t.array(),
         // every variable of that spot, with how it is computed (see _template_variables)
-        variables: { type: Array, optional: true },
+        variables: t.array().optional(),
         // editing the value shown by an element: fields clicked are joined
-        joinFields: { type: Boolean, optional: true },
-        loadFields: Function,
-        onSave: Function,
-        close: Function,
-    };
+        joinFields: t.boolean().optional(),
+        loadFields: t.function(),
+        onSave: t.function(),
+        close: t.function(),
+    });
 
     setup() {
         this.orm = useService("orm");
-        this.textRef = useRef("text");
-        this.highlightRef = useRef("highlight");
-        this.completionRef = useRef("completion");
+        this.textRef = signal.ref();
+        this.highlightRef = signal.ref();
+        this.completionRef = signal.ref();
         const openVars = {};
         // open the closest record: the line of a table, else the document
         const records = this.records;
@@ -173,13 +173,13 @@ export class ExpressionEditor extends Component {
         if (closest) {
             openVars[closest.var] = true;
         }
-        this.state = useState({
+        this.state = proxy({
             value: this.props.value || "", error: "", search: "", openVars, saving: false, showHelpers: false,
             completion: null, // {items, active, start, end, top, left}
         });
         this.snippets = this.isFormat ? FORMAT_SNIPPETS : PYTHON_SNIPPETS;
         onMounted(() => {
-            const text = this.textRef.el;
+            const text = this.textRef();
             text.focus();
             text.setSelectionRange(text.value.length, text.value.length);
         });
@@ -255,10 +255,10 @@ export class ExpressionEditor extends Component {
     }
 
     syncScroll() {
-        const highlight = this.highlightRef.el;
+        const highlight = this.highlightRef();
         if (highlight) {
-            highlight.scrollTop = this.textRef.el.scrollTop;
-            highlight.scrollLeft = this.textRef.el.scrollLeft;
+            highlight.scrollTop = this.textRef().scrollTop;
+            highlight.scrollLeft = this.textRef().scrollLeft;
         }
     }
 
@@ -268,7 +268,7 @@ export class ExpressionEditor extends Component {
 
     /** Insert ``text`` at the cursor; ``select``: [from, to] of it to select after. */
     insert(text, select = null) {
-        const el = this.textRef.el;
+        const el = this.textRef();
         const start = el.selectionStart ?? el.value.length;
         const end = el.selectionEnd ?? el.value.length;
         // inside {{ }} for text attributes, the cursor goes between the braces
@@ -288,7 +288,7 @@ export class ExpressionEditor extends Component {
 
     async insertField(payload) {
         const path = `${payload.var}.${payload.path}`;
-        const el = this.textRef.el;
+        const el = this.textRef();
         const before = el.value.slice(0, el.selectionStart).trimEnd();
         if (!this.props.joinFields || !before) {
             this.insert(path);
@@ -309,7 +309,7 @@ export class ExpressionEditor extends Component {
      * turn it into text, as a date, a number or an empty field cannot be joined.
      */
     async wrapLoneField() {
-        const el = this.textRef.el;
+        const el = this.textRef();
         const existing = el.value.trim();
         const before = el.value.slice(0, el.selectionStart).trimEnd();
         if (/^[A-Za-z_]\w*(\.[A-Za-z_]\w*)+$/.test(existing) && before === existing) {
@@ -433,7 +433,7 @@ export class ExpressionEditor extends Component {
      * ``force`` (Ctrl+Space): also with nothing typed yet.
      */
     async updateCompletion(force = false) {
-        const el = this.textRef.el;
+        const el = this.textRef();
         const request = (this.completionRequest = (this.completionRequest || 0) + 1);
         if (!el || el.selectionStart !== el.selectionEnd) {
             this.state.completion = null;
@@ -550,7 +550,7 @@ export class ExpressionEditor extends Component {
         if (!item || !completion) {
             return;
         }
-        const el = this.textRef.el;
+        const el = this.textRef();
         el.value = el.value.slice(0, completion.start) + item.insert + el.value.slice(completion.end);
         const caret = completion.start + item.insert.length - (item.caretBack || 0);
         this.state.value = el.value;
@@ -583,12 +583,12 @@ export class ExpressionEditor extends Component {
     scrollActiveIntoView() {
         // after the next render
         setTimeout(() => {
-            this.completionRef.el?.querySelector(".active")?.scrollIntoView({ block: "nearest" });
+            this.completionRef()?.querySelector(".active")?.scrollIntoView({ block: "nearest" });
         });
     }
 
     async save() {
-        const value = this.textRef.el.value.trim();
+        const value = this.textRef().value.trim();
         this.state.saving = true;
         try {
             const error = await this.orm.call(MODEL, "check_expression", [this.props.attr, value]);

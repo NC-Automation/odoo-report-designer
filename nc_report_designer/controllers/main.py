@@ -56,7 +56,7 @@ class ReportDesignerController(http.Controller):
             if state:
                 # the templates compiled with the earlier XML must not be used afterwards
                 env.invalidate_all()
-                env.registry.clear_cache('templates')
+                env.transaction.invalidate_ormcache('templates')
         return html
 
     @http.route('/nc_report_designer/preview/<int:report_id>/<int:res_id>', type='http', auth='user')

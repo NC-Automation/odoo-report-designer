@@ -2,26 +2,26 @@
 <templates xml:space="preserve">
 
     <t t-name="nc_report_designer.FieldList">
-        <ul class="o_ncd_fields list-unstyled mb-0" t-att-class="{'ms-3': props.depth > 0}">
-            <li t-foreach="visibleFields" t-as="field" t-key="field.name">
+        <ul class="o_ncd_fields list-unstyled mb-0" t-att-class="{'ms-3': this.props.depth > 0}">
+            <li t-foreach="this.visibleFields" t-as="field" t-key="field.name">
                 <div class="o_ncd_field d-flex align-items-center" draggable="true"
-                     t-att-title="props.var + '.' + path(field)"
-                     t-on-dragstart="(ev) => props.onDragStart(ev, this.payload(field))"
-                     t-on-dragend="() => props.onDragEnd()"
-                     t-on-click="() => props.onInsert(this.payload(field))">
-                    <i t-if="canExpand(field)" class="fa fa-fw o_ncd_caret"
-                       t-att-class="state.expanded[field.name] ? 'fa-caret-down' : 'fa-caret-right'"
+                     t-att-title="this.props.var + '.' + this.path(field)"
+                     t-on-dragstart="(ev) => this.props.onDragStart(ev, this.payload(field))"
+                     t-on-dragend="() => this.props.onDragEnd()"
+                     t-on-click="() => this.props.onInsert(this.payload(field))">
+                    <i t-if="this.canExpand(field)" class="fa fa-fw o_ncd_caret"
+                       t-att-class="this.state.expanded[field.name] ? 'fa-caret-down' : 'fa-caret-right'"
                        t-on-click.stop="() => this.toggle(field)"/>
                     <i t-else="" class="fa fa-fw"/>
-                    <span class="flex-grow-1 text-truncate o_ncd_c_field" t-esc="field.string"/>
+                    <span class="flex-grow-1 text-truncate o_ncd_c_field" t-out="field.string"/>
                     <small t-if="field.relation_name" class="ms-1 text-truncate o_ncd_c_table o_ncd_relation"
-                           t-att-title="typeLabel(field) + ' → ' + field.relation_name" t-esc="'→ ' + field.relation_name"/>
-                    <small t-else="" class="o_ncd_type ms-1" t-esc="typeLabel(field)"/>
+                           t-att-title="this.typeLabel(field) + ' → ' + field.relation_name" t-out="'→ ' + field.relation_name"/>
+                    <small t-else="" class="o_ncd_type ms-1" t-out="this.typeLabel(field)"/>
                 </div>
-                <FieldList t-if="state.expanded[field.name]"
-                           model="field.relation" var="props.var" prefix="path(field)" depth="props.depth + 1" column="props.column"
-                           loadFields="props.loadFields" onDragStart="props.onDragStart"
-                           onDragEnd="props.onDragEnd" onInsert="props.onInsert"/>
+                <FieldList t-if="this.state.expanded[field.name]"
+                           model="field.relation" var="this.props.var" prefix="this.path(field)" depth="this.props.depth + 1" column="this.props.column"
+                           loadFields="this.props.loadFields" onDragStart="this.props.onDragStart"
+                           onDragEnd="this.props.onDragEnd" onInsert="this.props.onInsert"/>
             </li>
         </ul>
     </t>
@@ -32,11 +32,11 @@
             <div class="o_ncd_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom flex-wrap">
                 <span class="fw-bold me-1"><i class="fa fa-paint-brush me-1"/>Report Designer</span>
                 <div class="o_ncd_selector">
-                    <RecordSelector resModel="'ir.actions.report'" resId="state.reportId"
-                                    domain="reportDomain" placeholder="'Choose a report…'"
+                    <RecordSelector resModel="'ir.actions.report'" resId="this.state.reportId"
+                                    domain="this.reportDomain" placeholder="'Choose a report…'"
                                     update="(id) => this.onReportSelected(id)"/>
                 </div>
-                <t t-if="state.setup">
+                <t t-if="this.state.setup">
                     <Dropdown>
                         <button class="btn btn-sm btn-light border" title="Edit, duplicate, use for emails or delete this report">
                             <i class="fa fa-ellipsis-v"/>
@@ -45,41 +45,41 @@
                             <DropdownItem onSelected="() => this.editReport()"><i class="fa fa-fw fa-pencil me-1"/>Edit…</DropdownItem>
                             <DropdownItem onSelected="() => this.duplicateReport()"><i class="fa fa-fw fa-clone me-1"/>Duplicate…</DropdownItem>
                             <DropdownItem onSelected="() => this.emailReport()"><i class="fa fa-fw fa-envelope-o me-1"/>Use for emails…</DropdownItem>
-                            <DropdownItem t-if="state.setup.report.copied_from" onSelected="() => this.deleteReport()" class="'text-danger'"><i class="fa fa-fw fa-trash me-1"/>Delete…</DropdownItem>
+                            <DropdownItem t-if="this.state.setup.report.copied_from" onSelected="() => this.deleteReport()" class="'text-danger'"><i class="fa fa-fw fa-trash me-1"/>Delete…</DropdownItem>
                         </t>
                     </Dropdown>
                     <button class="btn btn-sm btn-light border o_ncd_routing_btn text-truncate"
                             title="Companies this report applies to, and the report used for the others"
                             t-on-click="() => this.openRouting()">
-                        <i class="fa fa-building-o me-1"/><t t-esc="routingSummary"/>
+                        <i class="fa fa-building-o me-1"/><t t-out="this.routingSummary"/>
                     </button>
                     <span class="text-muted small">printing</span>
                     <div class="o_ncd_selector">
-                        <RecordSelector resModel="state.setup.report.model" resId="state.resId"
+                        <RecordSelector resModel="this.state.setup.report.model" resId="this.state.resId"
                                         placeholder="'Choose a record…'"
                                         update="(id) => this.onRecordSelected(id)"/>
                     </div>
                     <div class="btn-group btn-group-sm ms-2">
-                        <button class="btn btn-light" title="Undo (Ctrl+Z)" t-att-disabled="!state.history.undo or state.busy or state.viewingAt !== null" t-on-click="() => this.undo()"><i class="fa fa-undo"/></button>
-                        <button class="btn btn-light" title="Redo (Ctrl+Y)" t-att-disabled="!state.history.redo or state.busy or state.viewingAt !== null" t-on-click="() => this.redo()"><i class="fa fa-repeat"/></button>
+                        <button class="btn btn-light" title="Undo (Ctrl+Z)" t-att-disabled="!this.state.history.undo or this.state.busy or this.state.viewingAt !== null" t-on-click="() => this.undo()"><i class="fa fa-undo"/></button>
+                        <button class="btn btn-light" title="Redo (Ctrl+Y)" t-att-disabled="!this.state.history.redo or this.state.busy or this.state.viewingAt !== null" t-on-click="() => this.redo()"><i class="fa fa-repeat"/></button>
                     </div>
                     <div class="btn-group btn-group-sm align-items-center">
                         <button class="btn btn-light" title="Zoom out" t-on-click="() => this.zoom(-0.1)"><i class="fa fa-search-minus"/></button>
-                        <span class="px-2 small"><t t-esc="Math.round(state.zoom * 100)"/>%</span>
+                        <span class="px-2 small"><t t-out="Math.round(this.state.zoom * 100)"/>%</span>
                         <button class="btn btn-light" title="Zoom in" t-on-click="() => this.zoom(0.1)"><i class="fa fa-search-plus"/></button>
                     </div>
-                    <button class="btn btn-sm btn-light" title="Reload the preview" t-att-disabled="!state.resId" t-on-click="() => this.reloadPreview()"><i class="fa fa-refresh"/></button>
+                    <button class="btn btn-sm btn-light" title="Reload the preview" t-att-disabled="!this.state.resId" t-on-click="() => this.reloadPreview()"><i class="fa fa-refresh"/></button>
                     <div class="form-check form-switch mb-0 ms-2 small" title="Draw the elements hidden for this record, hatched, on the preview">
-                        <input class="form-check-input" type="checkbox" id="ncd_show_hidden" t-att-checked="state.showHidden"
-                               t-att-disabled="!state.resId" t-on-change="(ev) => this.setShowHidden(ev.target.checked)"/>
+                        <input class="form-check-input" type="checkbox" id="ncd_show_hidden" t-att-checked="this.state.showHidden"
+                               t-att-disabled="!this.state.resId" t-on-change="(ev) => this.setShowHidden(ev.target.checked)"/>
                         <label class="form-check-label" for="ncd_show_hidden">Show hidden</label>
                     </div>
-                    <button class="btn btn-sm btn-secondary ms-auto" t-att-disabled="!state.resId" t-on-click="() => this.openPdf()"><i class="fa fa-file-pdf-o me-1"/>Print PDF</button>
-                    <span class="small text-muted" t-esc="state.setup.paper.name"/>
+                    <button class="btn btn-sm btn-secondary ms-auto" t-att-disabled="!this.state.resId" t-on-click="() => this.openPdf()"><i class="fa fa-file-pdf-o me-1"/>Print PDF</button>
+                    <span class="small text-muted" t-out="this.state.setup.paper.name"/>
                 </t>
             </div>
 
-            <div t-if="!state.setup" class="o_ncd_empty d-flex flex-column align-items-center justify-content-center flex-grow-1 text-muted">
+            <div t-if="!this.state.setup" class="o_ncd_empty d-flex flex-column align-items-center justify-content-center flex-grow-1 text-muted">
                 <i class="fa fa-paint-brush fa-3x mb-3"/>
                 <h4>Choose a report to design</h4>
                 <p>Pick it in the box above. You will edit it on a live preview of one of its records.</p>
@@ -89,26 +89,26 @@
                 <!-- Palette -->
                 <div class="o_ncd_left border-end d-flex flex-column">
                     <ul class="nav nav-tabs px-2 pt-2">
-                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: state.leftTab === 'fields'}" t-on-click.prevent="() => this.setLeftTab('fields')">Fields</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: state.leftTab === 'blocks'}" t-on-click.prevent="() => this.setLeftTab('blocks')">Blocks</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: this.state.leftTab === 'fields'}" t-on-click.prevent="() => this.setLeftTab('fields')">Fields</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: this.state.leftTab === 'blocks'}" t-on-click.prevent="() => this.setLeftTab('blocks')">Blocks</a></li>
                     </ul>
                     <div class="flex-grow-1 overflow-auto p-2">
-                        <t t-if="state.leftTab === 'fields'">
+                        <t t-if="this.state.leftTab === 'fields'">
                             <input type="search" class="form-control form-control-sm mb-2" placeholder="Search fields…"
-                                   t-model="state.fieldSearch"/>
-                            <div t-foreach="state.scope" t-as="variable" t-key="variable.var" class="mb-1">
+                                   t-model.proxy="this.state.fieldSearch"/>
+                            <div t-foreach="this.state.scope" t-as="variable" t-key="variable.var" class="mb-1">
                                 <div class="o_ncd_var d-flex align-items-center" t-on-click="() => this.toggleVar(variable.var)">
-                                    <i class="fa fa-fw" t-att-class="state.openVars[variable.var] ? 'fa-caret-down' : 'fa-caret-right'"/>
-                                    <code class="me-1 o_ncd_c_var" t-esc="variable.var"/>
-                                    <span class="small text-truncate o_ncd_c_table" t-esc="variable.model_name"/>
+                                    <i class="fa fa-fw" t-att-class="this.state.openVars[variable.var] ? 'fa-caret-down' : 'fa-caret-right'"/>
+                                    <code class="me-1 o_ncd_c_var" t-out="variable.var"/>
+                                    <span class="small text-truncate o_ncd_c_table" t-out="variable.model_name"/>
                                     <span t-if="variable.column" class="badge text-bg-info ms-auto" title="Fields of the lines of this table: drop one on the table to add it as a column">columns</span>
                                 </div>
-                                <div t-if="variable.column and state.openVars[variable.var]" class="small text-muted ms-3 mb-1">
+                                <div t-if="variable.column and this.state.openVars[variable.var]" class="small text-muted ms-3 mb-1">
                                     Drop a field on the table (on a header, or on the line between two columns) to add it as a new column.
                                 </div>
-                                <FieldList t-if="state.openVars[variable.var]" model="variable.model" var="variable.var" column="variable.column"
-                                           depth="0" search="state.fieldSearch" loadFields="loadFields"
-                                           onDragStart="onPaletteDragStart" onDragEnd="onDragEnd" onInsert="insertFromPalette"/>
+                                <FieldList t-if="this.state.openVars[variable.var]" model="variable.model" var="variable.var" column="variable.column"
+                                           depth="0" search="this.state.fieldSearch" loadFields="this.loadFields"
+                                           onDragStart="this.onPaletteDragStart" onDragEnd="this.onDragEnd" onInsert="this.insertFromPalette"/>
                             </div>
                             <p class="small text-muted mt-2">
                                 Drag a field onto the page. Line fields appear when you select something in a
@@ -118,13 +118,13 @@
                         </t>
                         <t t-else="">
                             <div class="o_ncd_blocks">
-                                <div t-foreach="state.setup.blocks" t-as="block" t-key="block.key"
+                                <div t-foreach="this.state.setup.blocks" t-as="block" t-key="block.key"
                                      class="o_ncd_block" draggable="true"
                                      t-on-dragstart="(ev) => this.onPaletteDragStart(ev, {kind: 'block', block: block.key})"
                                      t-on-dragend="() => this.onDragEnd()"
                                      t-on-click="() => this.insertFromPalette({kind: 'block', block: block.key})">
                                     <i t-attf-class="fa fa-fw {{block.icon}}"/>
-                                    <span t-esc="block.name"/>
+                                    <span t-out="block.name"/>
                                 </div>
                             </div>
                             <p class="small text-muted mt-2">Drag a block onto the page, or click it to add it after the selected element.</p>
@@ -133,56 +133,56 @@
                 </div>
 
                 <!-- Canvas -->
-                <div class="o_ncd_canvas flex-grow-1 overflow-auto position-relative" t-ref="canvas">
-                    <div t-if="!state.resId" class="text-center text-muted p-5">
-                        There is no record of <b t-esc="state.setup.report.model_name"/> to preview this report with.
+                <div class="o_ncd_canvas flex-grow-1 overflow-auto position-relative" t-ref="this.canvasRef">
+                    <div t-if="!this.state.resId" class="text-center text-muted p-5">
+                        There is no record of <b t-out="this.state.setup.report.model_name"/> to preview this report with.
                     </div>
-                    <div t-if="state.resId and state.routing and state.routing.record and state.viewingAt === null"
+                    <div t-if="this.state.resId and this.state.routing and this.state.routing.record and this.state.viewingAt === null"
                          class="o_ncd_viewing alert alert-info d-flex align-items-center gap-2 py-1 px-2 mb-0">
                         <i class="fa fa-building-o"/>
-                        <span class="text-truncate" t-attf-title="This record is of {{state.routing.record.company}}: it prints with {{state.routing.record.report.name}}, not with this report.">
-                            This record is of <b t-esc="state.routing.record.company"/>: it prints with
-                            <b t-esc="state.routing.record.report.name"/>, not with this report.
+                        <span class="text-truncate" t-attf-title="This record is of {{this.state.routing.record.company}}: it prints with {{this.state.routing.record.report.name}}, not with this report.">
+                            This record is of <b t-out="this.state.routing.record.company"/>: it prints with
+                            <b t-out="this.state.routing.record.report.name"/>, not with this report.
                         </span>
                         <button class="btn btn-sm btn-info ms-auto flex-shrink-0" t-on-click="() => this.openRoutedReport()">Design that report</button>
                     </div>
-                    <div t-if="state.resId and state.viewingAt !== null" class="o_ncd_viewing alert alert-warning d-flex align-items-center gap-2 py-1 px-2 mb-0">
+                    <div t-if="this.state.resId and this.state.viewingAt !== null" class="o_ncd_viewing alert alert-warning d-flex align-items-center gap-2 py-1 px-2 mb-0">
                         <i class="fa fa-history"/>
                         <span class="text-truncate">
-                            <t t-if="viewingChange">As it was after <b t-esc="viewingChange.name"/> (<t t-esc="changeDate(viewingChange)"/>)</t>
+                            <t t-if="this.viewingChange">As it was after <b t-out="this.viewingChange.name"/> (<t t-out="this.changeDate(this.viewingChange)"/>)</t>
                             <t t-else="">As it was before any designer change</t>
                             — only to look at.
                         </span>
-                        <button class="btn btn-sm btn-warning ms-auto flex-shrink-0" t-on-click="() => this.resetTo(state.viewingAt)">Go back to this point</button>
+                        <button class="btn btn-sm btn-warning ms-auto flex-shrink-0" t-on-click="() => this.resetTo(this.state.viewingAt)">Go back to this point</button>
                         <button class="btn btn-sm btn-light border flex-shrink-0" t-on-click="() => this.viewAt(null)">Back to now</button>
                     </div>
-                    <div t-if="state.resId" class="o_ncd_page mx-auto my-4"
-                         t-att-class="{o_ncd_page_past: state.viewingAt !== null}"
-                         t-attf-style="width: {{pageWidthPx * state.zoom}}px; height: {{state.frameHeight * state.zoom}}px;">
-                        <iframe t-ref="iframe" t-att-src="state.previewUrl" class="o_ncd_frame"
-                                t-attf-style="width: {{pageWidthPx}}px; height: {{state.frameHeight}}px; transform: scale({{state.zoom}});"
+                    <div t-if="this.state.resId" class="o_ncd_page mx-auto my-4"
+                         t-att-class="{o_ncd_page_past: this.state.viewingAt !== null}"
+                         t-attf-style="width: {{this.pageWidthPx * this.state.zoom}}px; height: {{this.state.frameHeight * this.state.zoom}}px;">
+                        <iframe t-ref="this.iframeRef" t-att-src="this.state.previewUrl" class="o_ncd_frame"
+                                t-attf-style="width: {{this.pageWidthPx}}px; height: {{this.state.frameHeight}}px; transform: scale({{this.state.zoom}});"
                                 t-on-load="() => this.onIframeLoad()"/>
                     </div>
-                    <div t-if="state.busy" class="o_ncd_busy"><i class="fa fa-circle-o-notch fa-spin fa-2x"/></div>
+                    <div t-if="this.state.busy" class="o_ncd_busy"><i class="fa fa-circle-o-notch fa-spin fa-2x"/></div>
                 </div>
 
                 <!-- Properties / changes -->
                 <div class="o_ncd_right border-start d-flex flex-column">
                     <ul class="nav nav-tabs px-2 pt-2">
-                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: state.rightTab === 'properties'}" t-on-click.prevent="() => this.showTab('properties')">Properties</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: state.rightTab === 'changes'}" t-on-click.prevent="() => this.showTab('changes')">Changes</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: this.state.rightTab === 'properties'}" t-on-click.prevent="() => this.showTab('properties')">Properties</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" t-att-class="{active: this.state.rightTab === 'changes'}" t-on-click.prevent="() => this.showTab('changes')">Changes</a></li>
                         <li class="nav-item">
                             <a href="#" class="nav-link" title="Elements not visible on the page: show them again"
-                               t-att-class="{active: state.rightTab === 'hidden'}" t-on-click.prevent="() => this.showTab('hidden')">
+                               t-att-class="{active: this.state.rightTab === 'hidden'}" t-on-click.prevent="() => this.showTab('hidden')">
                                 <i class="fa fa-eye-slash me-1"/>Hidden
-                                <span t-if="hiddenByDesigner.length" class="badge rounded-pill text-bg-warning ms-1"
-                                      title="Hidden by your changes" t-esc="hiddenByDesigner.length"/>
+                                <span t-if="this.hiddenByDesigner.length" class="badge rounded-pill text-bg-warning ms-1"
+                                      title="Hidden by your changes" t-out="this.hiddenByDesigner.length"/>
                             </a>
                         </li>
                     </ul>
                     <div class="flex-grow-1 overflow-auto">
-                        <t t-if="state.rightTab === 'properties'" t-call="nc_report_designer.Properties"/>
-                        <t t-elif="state.rightTab === 'hidden'" t-call="nc_report_designer.Hidden"/>
+                        <t t-if="this.state.rightTab === 'properties'" t-call="nc_report_designer.Properties"/>
+                        <t t-elif="this.state.rightTab === 'hidden'" t-call="nc_report_designer.Hidden"/>
                         <t t-else="" t-call="nc_report_designer.Changes"/>
                     </div>
                 </div>
@@ -191,7 +191,7 @@
     </t>
 
     <t t-name="nc_report_designer.Properties">
-        <div t-if="!state.node" class="p-3 text-muted small">
+        <div t-if="!this.state.node" class="p-3 text-muted small">
             <p><b>Click</b> an element of the page to select it, <b>double-click</b> a text to edit it.</p>
             <p><b>Drag</b> fields and blocks from the left onto the page. Drag a selected element to move it.</p>
             <p>Keys: <kbd>Delete</kbd> removes, <kbd>Ctrl+Z</kbd>/<kbd>Ctrl+Y</kbd> undo/redo,
@@ -199,33 +199,33 @@
             <p>Every change is saved right away as an inherited view of the template: the original
                 templates are never modified, and the <b>Changes</b> tab resets them.</p>
         </div>
-        <div t-else="" class="o_ncd_props" t-key="state.nodeVersion">
-            <t t-set="node" t-value="state.node"/>
-            <t t-set="style" t-value="currentStyle"/>
+        <div t-else="" class="o_ncd_props" t-key="this.state.nodeVersion">
+            <t t-set="node" t-value="this.state.node"/>
+            <t t-set="style" t-value="this.currentStyle"/>
 
             <div class="o_ncd_section">
                 <div class="d-flex align-items-center">
-                    <code class="fs-6">&lt;<t t-esc="node.tag"/>&gt;</code>
-                    <span class="ms-2 small text-muted text-truncate" t-att-title="node.template.name" t-esc="node.template.key"/>
+                    <code class="fs-6">&lt;<t t-out="node.tag"/>&gt;</code>
+                    <span class="ms-2 small text-muted text-truncate" t-att-title="node.template.name" t-out="node.template.key"/>
                 </div>
                 <div t-if="node.template.shared" class="alert alert-warning small py-1 px-2 mt-2 mb-0">
                     Shared layout: changes here apply to every report that uses it.
                 </div>
-                <div t-if="!selectedOnPage" class="alert alert-info small py-1 px-2 mt-2 mb-0">
-                    <i class="fa fa-eye-slash me-1"/>Hidden on the printed page for this record<t t-if="selectedDrawn">:
-                    shown hatched here <t t-esc="state.showHidden ? 'with Show hidden on' : 'only while it is selected'"/></t><t t-else="">, and it cannot be drawn
+                <div t-if="!this.selectedOnPage" class="alert alert-info small py-1 px-2 mt-2 mb-0">
+                    <i class="fa fa-eye-slash me-1"/>Hidden on the printed page for this record<t t-if="this.selectedDrawn">:
+                    shown hatched here <t t-out="this.state.showHidden ? 'with Show hidden on' : 'only while it is selected'"/></t><t t-else="">, and it cannot be drawn
                     with this record (an empty list, or content needing what its condition checks)</t>. Change its <b>Visibility</b>
                     below, or use the <b>Hidden</b> tab.
                 </div>
-                <div t-if="state.ancestors.length" class="o_ncd_breadcrumb small mt-2">
-                    <t t-foreach="state.ancestors" t-as="ancestor" t-key="ancestor_index">
-                        <a href="#" t-on-click.prevent="() => this.select(ancestor.target)" t-esc="ancestor.label"/>
+                <div t-if="this.state.ancestors.length" class="o_ncd_breadcrumb small mt-2">
+                    <t t-foreach="this.state.ancestors" t-as="ancestor" t-key="ancestor_index">
+                        <a href="#" t-on-click.prevent="() => this.select(ancestor.target)" t-out="ancestor.label"/>
                         <span class="text-muted"> › </span>
                     </t>
-                    <b t-esc="node.tag"/>
+                    <b t-out="node.tag"/>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                    <button class="btn btn-sm btn-light" title="Select the parent (Alt+↑)" t-att-disabled="!state.ancestors.length" t-on-click="() => this.selectParent()"><i class="fa fa-level-up"/></button>
+                    <button class="btn btn-sm btn-light" title="Select the parent (Alt+↑)" t-att-disabled="!this.state.ancestors.length" t-on-click="() => this.selectParent()"><i class="fa fa-level-up"/></button>
                     <button class="btn btn-sm btn-light" title="Move up" t-on-click="() => this.moveSibling('up')"><i class="fa fa-arrow-up"/></button>
                     <button class="btn btn-sm btn-light" title="Move down" t-on-click="() => this.moveSibling('down')"><i class="fa fa-arrow-down"/></button>
                     <button class="btn btn-sm btn-light" title="Duplicate" t-on-click="() => this.duplicate()"><i class="fa fa-clone"/></button>
@@ -235,38 +235,38 @@
 
             <div t-if="node.text_only" class="o_ncd_section">
                 <div class="o_ncd_label d-flex">Text
-                    <a href="#" class="ms-auto small" t-on-click.prevent="() => this.startInlineEdit(this.elementsOf(state.selected)[0])">edit on the page</a>
+                    <a href="#" class="ms-auto small" t-on-click.prevent="() => this.startInlineEdit(this.elementsOf(this.state.selected)[0])">edit on the page</a>
                 </div>
                 <textarea class="form-control form-control-sm" rows="3" t-att-value="node.inner_html"
                           t-on-change="(ev) => this.setText(ev.target.value)"/>
             </div>
 
-            <div t-if="fieldDirective" class="o_ncd_section">
-                <div class="o_ncd_label" t-esc="fieldDirective === 't-field' ? 'Field' : 'Expression'"/>
+            <div t-if="this.fieldDirective" class="o_ncd_section">
+                <div class="o_ncd_label" t-out="this.fieldDirective === 't-field' ? 'Field' : 'Expression'"/>
                 <div class="input-group input-group-sm">
-                    <input class="form-control form-control-sm font-monospace" t-att-value="node.attrs[fieldDirective]"
+                    <input class="form-control form-control-sm font-monospace" t-att-value="node.attrs[this.fieldDirective]"
                            t-on-change="(ev) => this.setFieldExpression(ev.target.value)"/>
                     <button class="btn btn-light border o_ncd_fx" title="Open the expression editor" t-on-click="() => this.editFieldExpression()">fx</button>
                 </div>
                 <t t-set="display" t-value="node.display"/>
                 <t t-if="display and display.parsed">
                     <div class="o_ncd_label mt-2 d-flex">Format as
-                        <small t-if="display.field_type" class="ms-auto fw-normal text-muted" t-esc="display.field_type"/>
+                        <small t-if="display.field_type" class="ms-auto fw-normal text-muted" t-out="display.field_type"/>
                     </div>
                     <select class="form-select form-select-sm" t-on-change="(ev) => this.setDisplayWidget(ev.target.value)">
                         <option t-foreach="display.widgets" t-as="widget" t-key="widget.key" t-att-value="widget.key"
-                                t-att-selected="widget.key === display.widget" t-esc="widget.label"/>
+                                t-att-selected="widget.key === display.widget" t-out="widget.label"/>
                     </select>
-                    <div t-foreach="displayOptions" t-as="spec" t-key="spec.name" class="o_ncd_option mt-2"
+                    <div t-foreach="this.displayOptions" t-as="spec" t-key="spec.name" class="o_ncd_option mt-2"
                          t-att-title="spec.description or ''">
-                        <t t-set="current" t-value="optionValue(spec)"/>
+                        <t t-set="current" t-value="this.optionValue(spec)"/>
                         <label t-if="spec.type === 'boolean'" class="d-flex align-items-center gap-2 small mb-0">
                             <input type="checkbox" class="form-check-input mt-0" t-att-checked="current"
                                    t-on-change="(ev) => this.setOption(spec, ev.target.checked)"/>
-                            <t t-esc="spec.string"/>
+                            <t t-out="spec.string"/>
                         </label>
                         <t t-else="">
-                            <div class="small mb-1"><t t-esc="spec.string"/>
+                            <div class="small mb-1"><t t-out="spec.string"/>
                                 <span t-if="spec.required" class="text-danger">*</span></div>
                             <div t-if="spec.type === 'array'" class="d-flex flex-wrap gap-2">
                                 <label t-foreach="spec.params.params || []" t-as="choice" t-key="choice.field_name"
@@ -274,14 +274,14 @@
                                     <input type="checkbox" class="form-check-input mt-0"
                                            t-att-checked="(current || []).includes(choice.field_name)"
                                            t-on-change="(ev) => this.toggleOptionItem(spec, choice.field_name, ev.target.checked)"/>
-                                    <t t-esc="choice.label"/>
+                                    <t t-out="choice.label"/>
                                 </label>
                             </div>
                             <select t-elif="spec.type === 'selection'" class="form-select form-select-sm"
                                     t-on-change="(ev) => this.setOption(spec, ev.target.value)">
-                                <option value="" t-esc="optionPlaceholder(spec)"/>
-                                <option t-foreach="selectionChoices(spec)" t-as="choice" t-key="choice[0]"
-                                        t-att-value="choice[0]" t-att-selected="choice[0] === current" t-esc="choice[1]"/>
+                                <option value="" t-out="this.optionPlaceholder(spec)"/>
+                                <option t-foreach="this.selectionChoices(spec)" t-as="choice" t-key="choice[0]"
+                                        t-att-value="choice[0]" t-att-selected="choice[0] === current" t-out="choice[1]"/>
                             </select>
                             <t t-elif="spec.type === 'model'">
                                 <input class="form-control form-control-sm font-monospace" t-att-value="current or ''"
@@ -289,7 +289,7 @@
                                        t-on-change="(ev) => this.setOption(spec, ev.target.value, true)"/>
                                 <datalist t-att-id="'ncd_cand_' + spec.name">
                                     <option t-foreach="spec.candidates || []" t-as="cand" t-key="cand.expr"
-                                            t-att-value="cand.expr" t-esc="cand.label"/>
+                                            t-att-value="cand.expr" t-out="cand.label"/>
                                 </datalist>
                             </t>
                             <input t-elif="spec.type === 'date' or spec.type === 'datetime'"
@@ -297,10 +297,10 @@
                                    placeholder="An expression, e.g. o.invoice_date"
                                    t-on-change="(ev) => this.setOption(spec, ev.target.value, true)"/>
                             <input t-elif="spec.type === 'integer' or spec.type === 'float'" type="number"
-                                   class="form-control form-control-sm" t-att-value="orEmpty(current)"
-                                   t-att-placeholder="orEmpty(spec.default_value)"
+                                   class="form-control form-control-sm" t-att-value="this.orEmpty(current)"
+                                   t-att-placeholder="this.orEmpty(spec.default_value)"
                                    t-att-step="spec.type === 'integer' ? 1 : 'any'"
-                                   t-on-change="(ev) => this.setOption(spec, ev.target.value === '' ? '' : Number(ev.target.value))"/>
+                                   t-on-change="(ev) => this.setOption(spec, ev.target.value === '' ? '' : +ev.target.value)"/>
                             <input t-else="" class="form-control form-control-sm" t-att-value="current or ''"
                                    t-att-placeholder="spec.default_value or ''"
                                    t-on-change="(ev) => this.setOption(spec, ev.target.value)"/>
@@ -312,13 +312,13 @@
                 </div>
             </div>
 
-            <div t-if="otherExpressions.length" class="o_ncd_section">
+            <div t-if="this.otherExpressions.length" class="o_ncd_section">
                 <div class="o_ncd_label">Expressions
                     <small class="text-muted fw-normal">(what this element computes)</small>
                 </div>
-                <div t-foreach="otherExpressions" t-as="item" t-key="item.kind + item.child.join('.') + ':' + item.attr" class="mb-2">
+                <div t-foreach="this.otherExpressions" t-as="item" t-key="item.kind + item.child.join('.') + ':' + item.attr" class="mb-2">
                     <div class="small">
-                        <t t-esc="item.label"/>
+                        <t t-out="item.label"/>
                         <span t-if="item.inside" class="text-muted" title="Set on a &lt;t&gt; element inside this one"> · inside</span>
                     </div>
                     <input t-if="item.kind === 'text'" class="form-control form-control-sm" t-att-value="item.value"
@@ -335,11 +335,11 @@
             <div class="o_ncd_section">
                 <div class="o_ncd_label">Visibility</div>
                 <select class="form-select form-select-sm" t-on-change="(ev) => this.setVisibility(ev.target.value)">
-                    <option value="always" t-att-selected="visibilityMode === 'always'">Always show</option>
-                    <option t-if="conditionExpr" value="empty" t-att-selected="visibilityMode === 'empty'">Hide when the value is empty</option>
-                    <option value="custom" t-att-selected="visibilityMode === 'custom'">Show only when a condition is true…</option>
+                    <option value="always" t-att-selected="this.visibilityMode === 'always'">Always show</option>
+                    <option t-if="this.conditionExpr" value="empty" t-att-selected="this.visibilityMode === 'empty'">Hide when the value is empty</option>
+                    <option value="custom" t-att-selected="this.visibilityMode === 'custom'">Show only when a condition is true…</option>
                 </select>
-                <t t-if="visibilityMode === 'custom'">
+                <t t-if="this.visibilityMode === 'custom'">
                     <div class="input-group input-group-sm mt-1">
                         <input class="form-control form-control-sm font-monospace" placeholder="e.g. o.partner_id.vat"
                                t-att-value="node.attrs['t-if'] or ''" t-on-change="(ev) => this.setAttr('t-if', ev.target.value)"/>
@@ -354,8 +354,8 @@
                 <div class="d-flex flex-wrap gap-1 align-items-center">
                     <select class="form-select form-select-sm w-auto" title="Font size" t-on-change="(ev) => this.setStyle('font-size', ev.target.value)">
                         <option value="">Font size</option>
-                        <option t-foreach="fontSizes" t-as="size" t-key="size" t-att-value="size" t-att-selected="style['font-size'] === size" t-esc="size"/>
-                        <option t-if="style['font-size'] and !fontSizes.includes(style['font-size'])" t-att-value="style['font-size']" selected="selected" t-esc="style['font-size']"/>
+                        <option t-foreach="this.fontSizes" t-as="size" t-key="size" t-att-value="size" t-att-selected="style['font-size'] === size" t-out="size"/>
+                        <option t-if="style['font-size'] and !this.fontSizes.includes(style['font-size'])" t-att-value="style['font-size']" selected="selected" t-out="style['font-size']"/>
                     </select>
                     <div class="btn-group btn-group-sm">
                         <button class="btn" title="Bold" t-att-class="style['font-weight'] === 'bold' ? 'btn-primary' : 'btn-light'" t-on-click="() => this.toggleStyle('font-weight', 'bold')"><i class="fa fa-bold"/></button>
@@ -370,11 +370,11 @@
                 </div>
                 <div class="d-flex flex-wrap gap-3 mt-2 align-items-center small">
                     <label class="d-flex align-items-center gap-1">Color
-                        <input type="color" class="o_ncd_color" t-att-value="toHexColor(style.color)" t-on-change="(ev) => this.setStyle('color', ev.target.value)"/>
+                        <input type="color" class="o_ncd_color" t-att-value="this.toHexColor(style.color)" t-on-change="(ev) => this.setStyle('color', ev.target.value)"/>
                         <a t-if="style.color" href="#" title="Back to default" t-on-click.prevent="() => this.setStyle('color', '')"><i class="fa fa-times"/></a>
                     </label>
                     <label class="d-flex align-items-center gap-1">Background
-                        <input type="color" class="o_ncd_color" t-att-value="toHexColor(style['background-color'] or '#ffffff')" t-on-change="(ev) => this.setStyle('background-color', ev.target.value)"/>
+                        <input type="color" class="o_ncd_color" t-att-value="this.toHexColor(style['background-color'] or '#ffffff')" t-on-change="(ev) => this.setStyle('background-color', ev.target.value)"/>
                         <a t-if="style['background-color']" href="#" title="No background" t-on-click.prevent="() => this.setStyle('background-color', '')"><i class="fa fa-times"/></a>
                     </label>
                 </div>
@@ -382,23 +382,23 @@
 
             <div class="o_ncd_section">
                 <div class="o_ncd_label">Spacing <small class="text-muted fw-normal">(pixels; grey = current)</small></div>
-                <t t-set="box" t-value="boxSides"/>
-                <t t-set="computed" t-value="computedBox"/>
+                <t t-set="box" t-value="this.boxSides"/>
+                <t t-set="computed" t-value="this.computedBox"/>
                 <div class="o_ncd_boxmodel">
                     <span class="o_ncd_bm_title">Margin <small>(outside)</small></span>
-                    <t t-foreach="sides" t-as="side" t-key="'m' + side">
+                    <t t-foreach="this.sides" t-as="side" t-key="'m' + side">
                         <input t-attf-class="o_ncd_bm_input o_ncd_bm_{{side}}" t-att-title="'Margin ' + side"
-                               t-att-value="displayLength(box.margin[side])" t-att-placeholder="computed.margin[side]"
+                               t-att-value="this.displayLength(box.margin[side])" t-att-placeholder="computed.margin[side]"
                                t-on-change="(ev) => this.setSide('margin', side, ev.target.value)"/>
                     </t>
                     <div class="o_ncd_bm_padding">
                         <span class="o_ncd_bm_title">Padding <small>(inside)</small></span>
-                        <t t-foreach="sides" t-as="side" t-key="'p' + side">
+                        <t t-foreach="this.sides" t-as="side" t-key="'p' + side">
                             <input t-attf-class="o_ncd_bm_input o_ncd_bm_{{side}}" t-att-title="'Padding ' + side"
-                                   t-att-value="displayLength(box.padding[side])" t-att-placeholder="computed.padding[side]"
+                                   t-att-value="this.displayLength(box.padding[side])" t-att-placeholder="computed.padding[side]"
                                    t-on-change="(ev) => this.setSide('padding', side, ev.target.value)"/>
                         </t>
-                        <div class="o_ncd_bm_content" t-esc="node.tag"/>
+                        <div class="o_ncd_bm_content" t-out="node.tag"/>
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-2 small align-items-center">
@@ -413,32 +413,32 @@
             </div>
 
             <div class="o_ncd_section">
-                <t t-set="border" t-value="borderInfo"/>
+                <t t-set="border" t-value="this.borderInfo"/>
                 <div class="o_ncd_label">Border</div>
                 <div class="d-flex flex-wrap gap-2 align-items-center">
                     <div class="btn-group btn-group-sm" role="group">
                         <button class="btn" title="Border on all sides" t-att-class="border.all ? 'btn-primary' : 'btn-light'"
                                 t-on-click="() => this.setBorderAll(!this.borderInfo.all)"><i class="fa fa-square-o"/></button>
-                        <t t-foreach="sides" t-as="side" t-key="side">
+                        <t t-foreach="this.sides" t-as="side" t-key="side">
                             <button class="btn o_ncd_side_btn" t-att-title="'Border ' + side" t-att-class="border.sides[side] ? 'btn-primary' : 'btn-light'"
                                     t-on-click="() => this.toggleBorderSide(side)"><span t-attf-class="o_ncd_side_icon o_ncd_side_{{side}}"/></button>
                         </t>
                     </div>
                     <t t-if="border.any">
                         <input class="form-control form-control-sm o_ncd_num" title="Thickness (pixels)" placeholder="1"
-                               t-att-value="displayLength(border.width)" t-on-change="(ev) => this.setBorderWidth(ev.target.value)"/>
+                               t-att-value="this.displayLength(border.width)" t-on-change="(ev) => this.setBorderWidth(ev.target.value)"/>
                         <select class="form-select form-select-sm w-auto" title="Line style" t-on-change="(ev) => this.updateBorder({style: ev.target.value})">
-                            <option t-foreach="borderStyles" t-as="lineStyle" t-key="lineStyle" t-att-value="lineStyle"
-                                    t-att-selected="(border.style or 'solid') === lineStyle" t-esc="lineStyle"/>
+                            <option t-foreach="this.borderStyles" t-as="lineStyle" t-key="lineStyle" t-att-value="lineStyle"
+                                    t-att-selected="(border.style or 'solid') === lineStyle" t-out="lineStyle"/>
                         </select>
-                        <input type="color" class="o_ncd_color" title="Line color" t-att-value="toHexColor(border.color)"
+                        <input type="color" class="o_ncd_color" title="Line color" t-att-value="this.toHexColor(border.color)"
                                t-on-change="(ev) => this.updateBorder({color: ev.target.value})"/>
                     </t>
                 </div>
                 <div class="d-flex gap-2 mt-2 small align-items-center">
                     <label class="d-flex align-items-center gap-1">Rounded corners
                         <input class="form-control form-control-sm o_ncd_num" placeholder="0"
-                               t-att-value="displayLength(style['border-radius'])" t-on-change="(ev) => this.setLength('border-radius', ev.target.value)"/>
+                               t-att-value="this.displayLength(style['border-radius'])" t-on-change="(ev) => this.setLength('border-radius', ev.target.value)"/>
                     </label>
                 </div>
             </div>
@@ -448,11 +448,11 @@
                 <div class="d-flex gap-2 small">
                     <label class="d-flex align-items-center gap-1">Width
                         <input class="form-control form-control-sm o_ncd_len" placeholder="auto"
-                               t-att-value="displayLength(style.width)" t-on-change="(ev) => this.setLength('width', ev.target.value)"/>
+                               t-att-value="this.displayLength(style.width)" t-on-change="(ev) => this.setLength('width', ev.target.value)"/>
                     </label>
                     <label class="d-flex align-items-center gap-1">Min. height
                         <input class="form-control form-control-sm o_ncd_len" placeholder="auto"
-                               t-att-value="displayLength(style['min-height'])" t-on-change="(ev) => this.setLength('min-height', ev.target.value)"/>
+                               t-att-value="this.displayLength(style['min-height'])" t-on-change="(ev) => this.setLength('min-height', ev.target.value)"/>
                     </label>
                 </div>
             </div>
@@ -460,7 +460,7 @@
             <div t-if="node.grid" class="o_ncd_section">
                 <div class="o_ncd_label">Columns
                     <small class="text-muted fw-normal" t-if="node.grid.widths.every((w) => w)">
-                        (<t t-esc="node.grid.widths.join(' + ')"/><t t-if="node.grid.mode === 'grid'"> of 12</t>)
+                        (<t t-out="node.grid.widths.join(' + ')"/><t t-if="node.grid.mode === 'grid'"> of 12</t>)
                     </small>
                 </div>
                 <div class="d-flex align-items-center gap-2 mb-2 small">
@@ -503,11 +503,11 @@
             </div>
 
             <div class="o_ncd_section o_ncd_advanced_toggle" t-on-click="() => this.toggleAdvanced()">
-                <i t-attf-class="fa fa-fw {{state.showAdvanced ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                <i t-attf-class="fa fa-fw {{this.state.showAdvanced ? 'fa-caret-down' : 'fa-caret-right'}}"/>
                 <span class="o_ncd_label">Advanced</span>
                 <small class="text-muted ms-1">CSS classes, attributes, XML</small>
             </div>
-            <t t-if="state.showAdvanced">
+            <t t-if="this.state.showAdvanced">
             <div class="o_ncd_section">
                 <div class="o_ncd_label">CSS classes</div>
                 <input class="form-control form-control-sm font-monospace" t-att-value="node.attrs.class or ''"
@@ -517,24 +517,24 @@
             <div class="o_ncd_section">
                 <div class="o_ncd_label">Attributes</div>
                 <table class="table table-sm small mb-1 o_ncd_attrs">
-                    <tr t-foreach="attributeList" t-as="attr" t-key="attr.name">
-                        <td class="font-monospace text-nowrap" t-esc="attr.name"/>
+                    <tr t-foreach="this.attributeList" t-as="attr" t-key="attr.name">
+                        <td class="font-monospace text-nowrap" t-out="attr.name"/>
                         <td><input class="form-control form-control-sm font-monospace" t-att-value="attr.value" t-on-change="(ev) => this.setAttr(attr.name, ev.target.value)"/></td>
                         <td><a href="#" class="text-danger" title="Remove" t-on-click.prevent="() => this.setAttr(attr.name, '')"><i class="fa fa-times"/></a></td>
                     </tr>
                 </table>
                 <div class="d-flex gap-1">
-                    <input class="form-control form-control-sm font-monospace" placeholder="name" t-ref="newAttrName"/>
-                    <input class="form-control form-control-sm font-monospace" placeholder="value" t-ref="newAttrValue"/>
+                    <input class="form-control form-control-sm font-monospace" placeholder="name" t-ref="this.newAttrNameRef"/>
+                    <input class="form-control form-control-sm font-monospace" placeholder="value" t-ref="this.newAttrValueRef"/>
                     <button class="btn btn-sm btn-light" title="Add attribute" t-on-click="() => this.addAttribute()"><i class="fa fa-plus"/></button>
                 </div>
             </div>
 
             <div class="o_ncd_section">
                 <div class="o_ncd_label">XML</div>
-                <textarea class="form-control form-control-sm font-monospace o_ncd_xml" rows="8" t-ref="xml" t-att-value="node.source"/>
+                <textarea class="form-control form-control-sm font-monospace o_ncd_xml" rows="8" t-ref="this.xmlRef" t-att-value="node.source"/>
                 <button class="btn btn-sm btn-primary mt-1" t-on-click="() => this.applyXml()">Apply XML</button>
-                <div class="small text-muted mt-1 text-break">XPath: <code t-esc="node.xpath"/></div>
+                <div class="small text-muted mt-1 text-break">XPath: <code t-out="node.xpath"/></div>
             </div>
             </t>
         </div>
@@ -549,23 +549,23 @@
                 (except empty lists).
             </p>
             <div class="form-check form-switch small px-1 mb-2 ms-4">
-                <input class="form-check-input" type="checkbox" id="ncd_show_hidden_tab" t-att-checked="state.showHidden"
+                <input class="form-check-input" type="checkbox" id="ncd_show_hidden_tab" t-att-checked="this.state.showHidden"
                        t-on-change="(ev) => this.setShowHidden(ev.target.checked)"/>
                 <label class="form-check-label" for="ncd_show_hidden_tab">Show hidden on the preview</label>
             </div>
-            <div t-if="state.unforced" class="alert alert-info small py-1 px-2">
-                <t t-esc="state.unforced"/> of them cannot be drawn with this record (their content needs
+            <div t-if="this.state.unforced" class="alert alert-info small py-1 px-2">
+                <t t-out="this.state.unforced"/> of them cannot be drawn with this record (their content needs
                 what their condition checks for). Pick another record to see them.
             </div>
             <div class="o_ncd_label px-1">Hidden by your changes</div>
-            <div t-if="!hiddenByDesigner.length" class="text-muted small px-1 mb-2">Nothing.</div>
-            <t t-foreach="hiddenByDesigner" t-as="item" t-key="item.target" t-call="nc_report_designer.HiddenItem"/>
+            <div t-if="!this.hiddenByDesigner.length" class="text-muted small px-1 mb-2">Nothing.</div>
+            <t t-foreach="this.hiddenByDesigner" t-as="item" t-key="item.target" t-call="nc_report_designer.HiddenItem"/>
             <a href="#" class="d-block small px-1 mt-3 mb-2" t-on-click.prevent="() => this.toggleTemplateHidden()">
-                <i t-attf-class="fa fa-fw {{state.showTemplateHidden ? 'fa-caret-down' : 'fa-caret-right'}}"/>
-                Optional parts of the templates (<t t-esc="hiddenByTemplate.length"/>)
+                <i t-attf-class="fa fa-fw {{this.state.showTemplateHidden ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                Optional parts of the templates (<t t-out="this.hiddenByTemplate.length"/>)
             </a>
-            <t t-if="state.showTemplateHidden">
-                <t t-foreach="hiddenByTemplate" t-as="item" t-key="item.target" t-call="nc_report_designer.HiddenItem"/>
+            <t t-if="this.state.showTemplateHidden">
+                <t t-foreach="this.hiddenByTemplate" t-as="item" t-key="item.target" t-call="nc_report_designer.HiddenItem"/>
             </t>
         </div>
     </t>
@@ -573,20 +573,20 @@
     <t t-name="nc_report_designer.HiddenItem">
             <div class="card mb-2">
                 <div class="card-body p-2 small">
-                    <div class="font-monospace text-break" t-esc="item.label"/>
+                    <div class="font-monospace text-break" t-out="item.label"/>
                     <div class="text-muted mt-1">
-                        <t t-if="item.kind === 'condition'">Shown only if <code t-esc="item.expression"/></t>
+                        <t t-if="item.kind === 'condition'">Shown only if <code t-out="item.expression"/></t>
                         <t t-elif="item.kind === 'otherwise'">Shown only when the conditions before it are false</t>
-                        <t t-elif="item.kind === 'loop'">Repeated for each item of <code t-esc="item.expression"/> (none for this record)</t>
+                        <t t-elif="item.kind === 'loop'">Repeated for each item of <code t-out="item.expression"/> (none for this record)</t>
                         <t t-else="">Hidden by its style or classes</t>
                     </div>
-                    <div t-if="item.template" class="text-muted text-truncate" t-esc="item.template"/>
+                    <div t-if="item.template" class="text-muted text-truncate" t-out="item.template"/>
                     <div class="d-flex gap-1 mt-2">
                         <button class="btn btn-sm btn-light" t-on-click="() => this.selectHidden(item)"><i class="fa fa-mouse-pointer me-1"/>Select</button>
                         <button t-if="item.own_condition or item.kind === 'style'" class="btn btn-sm btn-light"
-                                t-att-disabled="state.busy" t-on-click="() => this.showHidden(item)"
+                                t-att-disabled="this.state.busy" t-on-click="() => this.showHidden(item)"
                                 t-att-title="item.original_expression ? 'Back to the template condition: ' + item.original_expression : 'Remove the condition'">
-                            <i class="fa fa-eye me-1"/><t t-esc="item.by_designer ? 'Show again' : 'Always show'"/>
+                            <i class="fa fa-eye me-1"/><t t-out="item.by_designer ? 'Show again' : 'Always show'"/>
                         </button>
                     </div>
                 </div>
@@ -596,22 +596,22 @@
     <t t-name="nc_report_designer.Changes">
         <div class="p-2">
             <div class="o_ncd_label px-1">History</div>
-            <div t-if="!state.timeline.length" class="text-muted small p-2">
+            <div t-if="!this.state.timeline.length" class="text-muted small p-2">
                 No designer changes yet on the templates of this report.
             </div>
             <t t-else="">
                 <div class="small text-muted px-1 mb-1">Click a point to see the report as it was then.</div>
                 <div class="o_ncd_timeline list-group mb-3">
-                    <t t-foreach="state.timeline" t-as="change" t-key="change.id">
-                        <t t-set="current" t-value="change_first ? state.viewingAt === null : state.viewingAt === change.id"/>
+                    <t t-foreach="this.state.timeline" t-as="change" t-key="change.id">
+                        <t t-set="current" t-value="change_first ? this.state.viewingAt === null : this.state.viewingAt === change.id"/>
                         <div class="list-group-item list-group-item-action o_ncd_point px-2 py-1" t-att-class="{active: current}"
                              t-on-click="() => this.viewAt(change.id)">
                             <div class="d-flex align-items-baseline gap-1">
-                                <span class="o_ncd_point_name text-truncate" t-att-title="change.name" t-esc="change.name"/>
+                                <span class="o_ncd_point_name text-truncate" t-att-title="change.name" t-out="change.name"/>
                                 <span t-if="change_first" class="badge text-bg-success ms-auto flex-shrink-0">now</span>
                             </div>
                             <div class="small o_ncd_point_meta" t-att-title="change.templates.join(', ')">
-                                <t t-esc="changeDate(change)"/> · <t t-esc="change.user"/>
+                                <t t-out="this.changeDate(change)"/> · <t t-out="change.user"/>
                             </div>
                             <button t-if="current and !change_first" class="btn btn-sm btn-warning mt-1 mb-1"
                                     t-on-click.stop="() => this.resetTo(change.id)">
@@ -619,14 +619,14 @@
                             </button>
                         </div>
                     </t>
-                    <div t-if="state.timelineMore" class="list-group-item small text-muted px-2 py-1">
-                        <t t-esc="state.timelineMore"/> older change(s) not listed
+                    <div t-if="this.state.timelineMore" class="list-group-item small text-muted px-2 py-1">
+                        <t t-out="this.state.timelineMore"/> older change(s) not listed
                     </div>
                     <div t-else="" class="list-group-item list-group-item-action o_ncd_point px-2 py-1"
-                         t-att-class="{active: state.viewingAt === 0}" t-on-click="() => this.viewAt(0)">
+                         t-att-class="{active: this.state.viewingAt === 0}" t-on-click="() => this.viewAt(0)">
                         <div class="o_ncd_point_name fst-italic">Original templates</div>
                         <div class="small o_ncd_point_meta">before any designer change</div>
-                        <button t-if="state.viewingAt === 0" class="btn btn-sm btn-warning mt-1 mb-1"
+                        <button t-if="this.state.viewingAt === 0" class="btn btn-sm btn-warning mt-1 mb-1"
                                 t-on-click.stop="() => this.resetTo(0)">
                             <i class="fa fa-history me-1"/>Go back to this point
                         </button>
@@ -635,23 +635,23 @@
             </t>
 
             <div class="o_ncd_label px-1">Templates changed</div>
-            <div t-if="!state.changes.length" class="text-muted small p-2">
+            <div t-if="!this.state.changes.length" class="text-muted small p-2">
                 None: the templates of this report are as they came.
             </div>
-            <div t-foreach="state.changes" t-as="change" t-key="change.id" class="card mb-2">
+            <div t-foreach="this.state.changes" t-as="change" t-key="change.id" class="card mb-2">
                 <div class="card-body p-2">
-                    <div class="fw-bold text-truncate" t-att-title="change.template.name" t-esc="change.template.name"/>
-                    <div class="small text-muted text-truncate" t-esc="change.template.key"/>
+                    <div class="fw-bold text-truncate" t-att-title="change.template.name" t-out="change.template.name"/>
+                    <div class="small text-muted text-truncate" t-out="change.template.key"/>
                     <div class="small mt-1">
-                        <t t-esc="change.count"/> change(s)
+                        <t t-out="change.count"/> change(s)
                         <span t-if="change.template.shared" class="badge text-bg-warning ms-1">shared layout</span>
                     </div>
                     <div class="d-flex gap-1 mt-2">
                         <button class="btn btn-sm btn-light" t-on-click="() => this.toggleChangeXml(change)"><i class="fa fa-code me-1"/>XML</button>
                         <button class="btn btn-sm btn-light text-danger" t-on-click="() => this.resetChange(change)"><i class="fa fa-undo me-1"/>Reset</button>
                     </div>
-                    <t t-if="state.editingChange === change.id">
-                        <textarea class="form-control form-control-sm font-monospace o_ncd_xml mt-2" rows="16" t-ref="changeXml" t-att-value="change.arch"/>
+                    <t t-if="this.state.editingChange === change.id">
+                        <textarea class="form-control form-control-sm font-monospace o_ncd_xml mt-2" rows="16" t-ref="this.changeXmlRef" t-att-value="change.arch"/>
                         <button class="btn btn-sm btn-primary mt-1" t-on-click="() => this.saveChangeXml(change)">Save XML</button>
                     </t>
                 </div>

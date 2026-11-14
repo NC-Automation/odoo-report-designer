@@ -1982,7 +1982,6 @@ class NcReportDesigner(models.AbstractModel):
         copy = report.copy({
             'name': name,
             'report_name': main_key,
-            'report_file': main_key,
             'ncd_copied_from_id': report.ncd_copied_from_id.id or report.id,
             'binding_model_id': report.binding_model_id.id if print_menu else False,
         })

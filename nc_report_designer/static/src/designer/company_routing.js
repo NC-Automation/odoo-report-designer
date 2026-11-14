@@ -1,4 +1,4 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, proxy, t, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
@@ -16,18 +16,18 @@ const MODEL = "nc.report.designer";
 export class CompanyRouting extends Component {
     static template = "nc_report_designer.CompanyRouting";
     static components = { Dialog, RecordSelector, MultiRecordSelector };
-    static props = {
-        reportId: Number,
-        reportName: String,
-        model: String,
-        onSaved: Function,
-        close: Function,
-    };
+    props = useProps({
+        reportId: t.number(),
+        reportName: t.string(),
+        model: t.string(),
+        onSaved: t.function(),
+        close: t.function(),
+    });
 
     setup() {
         this.orm = useService("orm");
         this.nextKey = 1;
-        this.state = useState({
+        this.state = proxy({
             loaded: false,
             companyIds: [],
             rules: [],

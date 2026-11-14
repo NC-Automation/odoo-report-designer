@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_nc_report_designer_change,nc.report.designer.change,model_nc_report_designer_change,base.group_system,1,1,1,1
-access_nc_report_company_rule,nc.report.company.rule,model_nc_report_company_rule,base.group_system,1,1,1,1

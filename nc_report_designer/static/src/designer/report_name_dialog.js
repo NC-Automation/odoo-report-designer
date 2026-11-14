@@ -1,26 +1,26 @@
-import { Component, onMounted, useRef, useState } from "@odoo/owl";
+import { Component, onMounted, proxy, signal, t, useProps } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 
 /** Asks for a report name (Rename / Duplicate in the designer). */
 export class ReportNameDialog extends Component {
     static template = "nc_report_designer.ReportNameDialog";
     static components = { Dialog };
-    static props = {
-        title: String,
-        name: String,
-        confirmLabel: String,
-        help: { type: String, optional: true },
-        printMenu: { type: Boolean, optional: true }, // shows the "Print menu" checkbox
-        onConfirm: Function, // (name, { printMenu }) => Promise
-        close: Function,
-    };
+    props = useProps({
+        title: t.string(),
+        name: t.string(),
+        confirmLabel: t.string(),
+        help: t.string().optional(),
+        printMenu: t.boolean().optional(), // shows the "Print menu" checkbox
+        onConfirm: t.function(), // (name, { printMenu }) => Promise
+        close: t.function(),
+    });
 
     setup() {
-        this.inputRef = useRef("name");
-        this.state = useState({ name: this.props.name, printMenu: true, error: "", saving: false });
+        this.inputRef = signal.ref();
+        this.state = proxy({ name: this.props.name, printMenu: true, error: "", saving: false });
         onMounted(() => {
-            this.inputRef.el?.focus();
-            this.inputRef.el?.select();
+            this.inputRef()?.focus();
+            this.inputRef()?.select();
         });
     }
 

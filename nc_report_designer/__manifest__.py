@@ -1,6 +1,6 @@
 {
     'name': 'Report Designer',
-    'version': '19.0.1.7.0',
+    'version': '20.0.1.7.0',
     'category': 'Productivity',
     'summary': 'Drag-and-drop, edit-while-previewing designer for printed (QWeb) reports',
     'description': """
@@ -25,7 +25,7 @@ applying.
     'license': 'LGPL-3',
     'depends': ['web', 'base_setup'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'views/report_designer_views.xml',
     ],
     'assets': {

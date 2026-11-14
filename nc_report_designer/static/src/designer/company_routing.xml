@@ -3,13 +3,13 @@
 
     <t t-name="nc_report_designer.CompanyRouting">
         <Dialog title="'Companies'" size="'lg'">
-            <div t-if="state.loaded" class="o_ncd_routing">
-                <div t-if="!state.multiCompany" class="alert alert-info small py-2">
+            <div t-if="this.state.loaded" class="o_ncd_routing">
+                <div t-if="!this.state.multiCompany" class="alert alert-info small py-2">
                     There is only one company: this matters once there are several.
                 </div>
-                <label class="form-label fw-bold mb-1">“<t t-esc="props.reportName"/>” applies to</label>
-                <MultiRecordSelector resModel="'res.company'" resIds="state.companyIds"
-                                     domain="companyDomain(null)" placeholder="'All companies'"
+                <label class="form-label fw-bold mb-1">“<t t-out="this.props.reportName"/>” applies to</label>
+                <MultiRecordSelector resModel="'res.company'" resIds="this.state.companyIds"
+                                     domain="this.companyDomain(null)" placeholder="'All companies'"
                                      update="(ids) => this.setCompanies(ids)"/>
                 <div class="form-text">
                     Leave it empty to use this report for every company. Choose companies to make it a
@@ -17,19 +17,19 @@
                     uses the report chosen below for records of the other companies.
                 </div>
 
-                <t t-if="state.companyIds.length">
+                <t t-if="this.state.companyIds.length">
                     <div class="fw-bold mt-4 mb-1">Other companies use</div>
-                    <div t-foreach="state.rules" t-as="rule" t-key="rule.key" class="o_ncd_routing_rule d-flex align-items-start gap-2 mb-2">
+                    <div t-foreach="this.state.rules" t-as="rule" t-key="rule.key" class="o_ncd_routing_rule d-flex align-items-start gap-2 mb-2">
                         <div class="flex-grow-1 o_ncd_routing_companies">
                             <MultiRecordSelector resModel="'res.company'" resIds="rule.companyIds"
-                                                 domain="companyDomain(rule.key)" placeholder="'Companies…'"
-                                                 update="(ids) => { rule.companyIds = ids; state.error = ''; }"/>
+                                                 domain="this.companyDomain(rule.key)" placeholder="'Companies…'"
+                                                 update="(ids) => { rule.companyIds = ids; this.state.error = ''; }"/>
                         </div>
                         <span class="text-muted pt-1">use</span>
                         <div class="flex-grow-1 o_ncd_routing_report">
                             <RecordSelector resModel="'ir.actions.report'" resId="rule.reportId"
-                                            domain="reportDomain" placeholder="'Report…'"
-                                            update="(id) => { rule.reportId = id; state.error = ''; }"/>
+                                            domain="this.reportDomain" placeholder="'Report…'"
+                                            update="(id) => { rule.reportId = id; this.state.error = ''; }"/>
                         </div>
                         <button class="btn btn-link text-danger px-1" title="Remove this line"
                                 t-on-click="() => this.removeRule(rule)"><i class="fa fa-trash"/></button>
@@ -44,9 +44,9 @@
                         </div>
                         <span class="text-muted pt-1">use</span>
                         <div class="flex-grow-1 o_ncd_routing_report">
-                            <RecordSelector resModel="'ir.actions.report'" resId="state.otherReportId"
-                                            domain="reportDomain" placeholder="'Report… (required)'"
-                                            update="(id) => { state.otherReportId = id; state.error = ''; }"/>
+                            <RecordSelector resModel="'ir.actions.report'" resId="this.state.otherReportId"
+                                            domain="this.reportDomain" placeholder="'Report… (required)'"
+                                            update="(id) => { this.state.otherReportId = id; this.state.error = ''; }"/>
                         </div>
                         <button class="btn btn-link px-1 invisible" tabindex="-1" aria-hidden="true"><i class="fa fa-trash"/></button>
                     </div>
@@ -55,11 +55,11 @@
                         (they do not choose a report per company themselves).
                     </div>
                 </t>
-                <div t-if="state.error" class="alert alert-danger small py-1 px-2 mt-3 mb-0" t-esc="state.error"/>
+                <div t-if="this.state.error" class="alert alert-danger small py-1 px-2 mt-3 mb-0" t-out="this.state.error"/>
             </div>
             <t t-set-slot="footer">
-                <button class="btn btn-primary" t-att-disabled="state.saving or !state.loaded" t-on-click="() => this.save()">Save</button>
-                <button class="btn btn-secondary" t-on-click="() => props.close()">Cancel</button>
+                <button class="btn btn-primary" t-att-disabled="this.state.saving or !this.state.loaded" t-on-click="() => this.save()">Save</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
             </t>
         </Dialog>
     </t>
