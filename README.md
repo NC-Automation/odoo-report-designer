@@ -2,6 +2,8 @@
 
 A WYSIWYG designer for Odoo's printed (QWeb) reports: quotes, invoices, delivery slips and any other PDF report. You edit on a live preview of a real record, and every change is saved as a regular inherited view, so the original templates are never modified and Odoo upgrades keep working.
 
+> Using Odoo 20? Use the [`20.0` branch](https://github.com/NC-Automation/odoo-report-designer/tree/20.0).
+
 [![Watch the demo video (3:10)](docs/video-thumbnail.jpg)](https://nc-automation.github.io/odoo-report-designer/)
 
 ▶ **[Watch the demo video](https://nc-automation.github.io/odoo-report-designer/)** (3:10, with captions), or [download it](https://github.com/NC-Automation/odoo-report-designer/raw/main/docs/demo.mp4).

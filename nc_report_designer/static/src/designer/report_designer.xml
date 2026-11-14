@@ -300,7 +300,7 @@
                                    class="form-control form-control-sm" t-att-value="orEmpty(current)"
                                    t-att-placeholder="orEmpty(spec.default_value)"
                                    t-att-step="spec.type === 'integer' ? 1 : 'any'"
-                                   t-on-change="(ev) => this.setOption(spec, ev.target.value === '' ? '' : Number(ev.target.value))"/>
+                                   t-on-change="(ev) => this.setOption(spec, ev.target.value === '' ? '' : +ev.target.value)"/>
                             <input t-else="" class="form-control form-control-sm" t-att-value="current or ''"
                                    t-att-placeholder="spec.default_value or ''"
                                    t-on-change="(ev) => this.setOption(spec, ev.target.value)"/>
