@@ -1,6 +1,6 @@
 {
     'name': 'Report Designer',
-    'version': '19.0.1.7.0',
+    'version': '19.0.1.7.1',
     'category': 'Productivity',
     'summary': 'Drag-and-drop, edit-while-previewing designer for printed (QWeb) reports',
     'description': """
